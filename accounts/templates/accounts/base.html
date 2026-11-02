@@ -1,0 +1,64 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#052f28">
+    <title>{% block title %}Tribu | Gestión tributaria{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'accounts/styles.css' %}">
+</head>
+<body>
+    <main class="auth-layout {% block page_class %}{% endblock %}">
+        <section class="brand-panel" aria-label="Acerca de Tribu">
+            <a class="brand" href="{% url 'login' %}" aria-label="Tribu, inicio">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 19 6v5c0 4.5-2.9 8-7 10-4.1-2-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.8"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="brand-copy"><strong>Tribu</strong><small>GESTIÓN TRIBUTARIA</small></span>
+            </a>
+
+            <div class="brand-message">
+                <span class="eyebrow"><span class="eyebrow-dot"></span>SIMPLE, SEGURA Y EN ORDEN</span>
+                <h1>{% block brand_title %}Tu tranquilidad<br>fiscal empieza aquí.{% endblock %}</h1>
+                <p>{% block brand_description %}Centraliza obligaciones, declaraciones y documentos para tomar mejores decisiones sin perder tiempo.{% endblock %}</p>
+                <div class="benefits">
+                    <article class="benefit-card">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        <strong>Ahorra tiempo</strong>
+                        <span>Toda tu gestión en un mismo lugar.</span>
+                    </article>
+                    <article class="benefit-card">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3 19 6v5c0 4.5-2.9 8-7 10-4.1-2-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.7"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <strong>Datos protegidos</strong>
+                        <span>Seguridad para tu información.</span>
+                    </article>
+                </div>
+            </div>
+            <p class="brand-footer">© 2025 Tribu. Tus impuestos, bajo control.</p>
+        </section>
+
+        <section class="form-panel">
+            <div class="form-wrap">
+                {% if messages %}
+                    <div class="messages" role="status">
+                        {% for message in messages %}<p class="message {{ message.tags }}">{{ message }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock %}
+            </div>
+            <p class="security-note">Protegemos tu información con los más altos estándares de seguridad.</p>
+        </section>
+    </main>
+    <script>
+        document.querySelectorAll('[data-toggle-password]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const input = document.getElementById(button.dataset.togglePassword);
+                if (!input) return;
+                input.type = input.type === 'password' ? 'text' : 'password';
+                button.setAttribute('aria-label', input.type === 'password' ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            });
+        });
+    </script>
+</body>
+</html>

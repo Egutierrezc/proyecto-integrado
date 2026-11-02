@@ -1,0 +1,41 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Iniciar sesión | Tribu{% endblock %}
+
+{% block content %}
+<header class="form-heading">
+    <p class="welcome">Bienvenido de nuevo</p>
+    <h2>Inicia sesión en tu cuenta</h2>
+    <p class="form-intro">Gestiona tus obligaciones tributarias de forma clara y sencilla.</p>
+</header>
+
+<form method="post" class="auth-form">
+    {% csrf_token %}
+    {% if form.non_field_errors %}
+        <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div class="field">
+        <label for="id_username">Correo electrónico</label>
+        <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <input id="id_username" name="username" type="email" maxlength="20" placeholder="tu@empresa.com" autocomplete="username" value="{{ form.username.value|default:'' }}" required autofocus>
+        </div>
+        {% for error in form.username.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <div class="field">
+        <label for="id_password">Contraseña</label>
+        <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.7"/><path d="M12 14v3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <input id="id_password" name="password" type="password" maxlength="20" placeholder="Ingresa tu contraseña" autocomplete="current-password" required>
+            <button class="password-toggle" type="button" data-toggle-password="id_password" aria-label="Mostrar contraseña">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.2-5 9.5-5 9.5 5 9.5 5-3.2 5-9.5 5-9.5-5-9.5-5Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="2.5" stroke="currentColor" stroke-width="1.6"/></svg>
+            </button>
+        </div>
+        {% for error in form.password.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
+    </div>
+    <a class="forgot-link" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
+    <button class="button button-primary" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button>
+    <div class="divider"><span>¿Aún no tienes una cuenta?</span></div>
+    <button class="button button-secondary" type="button" disabled>Crear una cuenta</button>
+</form>
+{% endblock %}

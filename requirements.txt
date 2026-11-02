@@ -1,0 +1,2 @@
+# Versión de Python utilizada: 3.12.10
+Django>=5.2,<5.3
