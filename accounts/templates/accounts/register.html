@@ -1,0 +1,40 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Crear cuenta | Tribu{% endblock %}
+
+{% block content %}
+<header class="form-heading">
+    <p class="welcome">Empieza hoy</p>
+    <h2>Crea tu cuenta en Tribu</h2>
+    <p class="form-intro">Organiza tus obligaciones tributarias de forma rápida y segura.</p>
+</header>
+
+<form method="post" class="auth-form">
+    {% csrf_token %}
+    
+    {% if form.non_field_errors %}
+        <div class="form-errors" role="alert">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% for field in form %}
+    <div class="field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            {{ field }}
+        </div>
+        {% if field.help_text %}
+            <div class="help-text">{{ field.help_text|safe }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+            <small class="field-error">{{ error }}</small>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <button class="button button-primary" type="submit">Registrarse <span aria-hidden="true">→</span></button>
+    
+    <div class="divider"><span>¿Ya tienes una cuenta?</span></div>
+    <a class="button button-secondary" href="{% url 'login' %}">Iniciar sesión</a>
+</form>
+{% endblock %}

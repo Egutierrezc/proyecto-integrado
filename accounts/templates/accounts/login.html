@@ -18,7 +18,7 @@
         <label for="id_username">Correo electrónico</label>
         <div class="input-wrap">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-            <input id="id_username" name="username" type="email" maxlength="20" placeholder="tu@empresa.com" autocomplete="username" value="{{ form.username.value|default:'' }}" required autofocus>
+            <input id="id_username" name="username" type="email" maxlength="50" placeholder="tu@empresa.com" autocomplete="username" value="{{ form.username.value|default:'' }}" required autofocus>
         </div>
         {% for error in form.username.errors %}<small class="field-error">{{ error }}</small>{% endfor %}
     </div>
@@ -36,6 +36,6 @@
     <a class="forgot-link" href="{% url 'password_reset' %}">¿Olvidaste tu contraseña?</a>
     <button class="button button-primary" type="submit">Iniciar sesión <span aria-hidden="true">→</span></button>
     <div class="divider"><span>¿Aún no tienes una cuenta?</span></div>
-    <button class="button button-secondary" type="button" disabled>Crear una cuenta</button>
+    <a class="button button-secondary" href="{% url 'register' %}">Crear una cuenta</a>
 </form>
 {% endblock %}
