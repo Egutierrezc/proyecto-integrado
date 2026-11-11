@@ -13,6 +13,7 @@ urlpatterns = [
         ),
         name='login',
     ),
+    path('registro/', views.register, name='register'),
     path('panel/', views.dashboard, name='dashboard'),
     path('cerrar-sesion/', auth_views.LogoutView.as_view(), name='logout'),
     path(
