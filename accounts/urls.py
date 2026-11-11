@@ -14,8 +14,11 @@ urlpatterns = [
         name='login',
     ),
     path('registro/', views.register, name='register'),
+    path('api/token/login/', views.TokenLoginView.as_view(), name='api-token-login'),
+    path('api/token/logout/', views.TokenLogoutView.as_view(), name='api-token-logout'),
+    path('api/token/me/', views.TokenIdentityView.as_view(), name='api-token-me'),
     path('panel/', views.dashboard, name='dashboard'),
-    path('cerrar-sesion/', auth_views.LogoutView.as_view(), name='logout'),
+    path('cerrar-sesion/', views.WebLogoutView.as_view(), name='logout'),
     path(
         'recuperar-contrasena/',
         auth_views.PasswordResetView.as_view(

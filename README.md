@@ -5,6 +5,7 @@ Proyecto inicial de gestión tributaria construido con Django.
 ## Versiones
 
 Python 3.12.10 y Django 5.2.x.
+La API de autenticación usa Django REST Framework 3.16.x.
 
 ## Organización y configuración
 
@@ -73,4 +74,16 @@ GMAIL_APP_PASSWORD=<contraseña de aplicación>
 
 Usa HTTPS en el dominio configurado: producción redirige el tráfico a HTTPS y marca las cookies como seguras. Recopila los archivos estáticos durante el despliegue con `python manage.py collectstatic`.
 
-La aplicación incluye inicio de sesión con correo y contraseña, recuperación de contraseña y un panel privado inicial. Las pantallas de recuperación comparten una sola plantilla HTML; el correo y su asunto usan plantillas independientes porque generan contenido de email. El botón de creación de cuenta aparece deshabilitado hasta que se implemente el registro.
+La aplicación incluye inicio de sesión web con correo y contraseña, registro de cuentas, recuperación de contraseña y un panel privado inicial. Las pantallas de recuperación comparten una sola plantilla HTML; el correo y su asunto usan plantillas independientes porque generan contenido de email.
+
+## API de autenticación por token
+
+La API mantiene el inicio de sesión web existente y ofrece estos endpoints:
+
+- `POST /api/token/login/` recibe `{"username": "usuario", "password": "contraseña"}` y devuelve un token persistido. También acepta el correo asociado a la cuenta en `username`.
+- `GET /api/token/me/` devuelve los datos del usuario autenticado.
+- `POST /api/token/logout/` elimina el token y cierra esa sesión de API.
+
+Para los endpoints protegidos, envía `Authorization: Token <token>`. El token se genera y se valida contra la base de datos; cada cuenta conserva un token activo y el cierre de sesión lo elimina. Django verifica la contraseña usando su hash, nunca almacenando la contraseña enviada. En producción, usa HTTPS para proteger las credenciales y los tokens en tránsito.
+
+El inicio de sesión web también obtiene el token en el panel y lo guarda en `localStorage` y `sessionStorage` del navegador bajo la clave `authToken`; al cerrar sesión desde la web, lo elimina de ambos almacenamientos y de la base de datos. Estos almacenamientos permiten que JavaScript lea el token, así que cualquier vulnerabilidad XSS podría exponerlo: en producción conviene mantener una política CSP estricta y evitar scripts de terceros no confiables.

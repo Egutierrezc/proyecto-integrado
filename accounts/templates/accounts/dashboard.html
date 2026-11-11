@@ -16,4 +16,15 @@
     {% csrf_token %}
     <button class="button button-secondary" type="submit">Cerrar sesión</button>
 </form>
+{{ api_token|json_script:"api-token" }}
+<script>
+    const apiToken = JSON.parse(document.getElementById('api-token').textContent);
+    localStorage.setItem('authToken', apiToken);
+    sessionStorage.setItem('authToken', apiToken);
+
+    document.querySelector('.logout-form').addEventListener('submit', () => {
+        localStorage.removeItem('authToken');
+        sessionStorage.removeItem('authToken');
+    });
+</script>
 {% endblock %}
