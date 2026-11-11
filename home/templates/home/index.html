@@ -1,0 +1,121 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio | Tribu</title>
+    <link rel="stylesheet" href="{% static 'home/styles.css' %}">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">✓</div>
+                <div>
+                    <h2>Tribu</h2>
+                    <small>GESTIÓN TRIBUTARIA</small>
+                </div>
+            </div>
+
+            <nav>
+                <a class="active" href="#">⌂ &nbsp; Inicio</a>
+                <a href="#">▣ &nbsp; Obligaciones</a>
+                <a href="#">▤ &nbsp; Declaraciones</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="#">⚙ &nbsp; Configuración</a>
+                <a href="#">↪ &nbsp; Cerrar sesión</a>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <input type="text" placeholder="⌕  Buscar declaraciones...">
+                <div class="profile">
+                    <span>MG</span>
+                    María González
+                </div>
+            </header>
+
+            <main class="content">
+                <div class="welcome">
+                    <div>
+                        <h1>Buenos días, María</h1>
+                        <p>Aquí tienes un resumen de tus impuestos.</p>
+                    </div>
+                    <button class="primary-button">＋ Nueva declaración</button>
+                </div>
+
+                <section class="stats">
+                    <div class="stat-card">
+                        <div class="stat-icon orange">◷</div>
+                        <h2>3</h2>
+                        <p>Pendientes</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">✓</div>
+                        <h2>12</h2>
+                        <p>Presentadas</p>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple">▣</div>
+                        <h2>18 Jun</h2>
+                        <p>Próximo vencimiento</p>
+                    </div>
+                </section>
+
+                <section class="deadlines">
+                    <div class="section-heading">
+                        <h3>Próximos vencimientos</h3>
+                        <p>Obligaciones que requieren tu atención</p>
+                    </div>
+
+                    <div class="deadline-row">
+                        <div>
+                            <strong>Declaración de IVA</strong>
+                            <p>Bimestre 3 · 2025</p>
+                        </div>
+                        <div class="deadline-info">
+                            <span class="tag yellow">Próxima</span>
+                            <strong>18 Jun</strong>
+                        </div>
+                    </div>
+
+                    <div class="deadline-row">
+                        <div>
+                            <strong>Retención en la fuente</strong>
+                            <p>Mayo · 2025</p>
+                        </div>
+                        <div class="deadline-info">
+                            <span class="tag blue">Pendiente</span>
+                            <strong>24 Jun</strong>
+                        </div>
+                    </div>
+
+                    <div class="deadline-row">
+                        <div>
+                            <strong>Impuesto de renta</strong>
+                            <p>Año gravable · 2024</p>
+                        </div>
+                        <div class="deadline-info">
+                            <span class="tag violet">En revisión</span>
+                            <strong>09 Jul</strong>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="success-message">
+                    <div>
+                        <strong>✓ &nbsp; Todo está bajo control</strong>
+                        <p>No tienes obligaciones vencidas.</p>
+                    </div>
+                    <span>Ver calendario</span>
+                </section>
+            </main>
+        </div>
+    </div>
+</body>
+</html>
