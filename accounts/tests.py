@@ -10,7 +10,7 @@ class AuthenticationFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Inicia sesión en tu cuenta')
         self.assertContains(response, 'csrfmiddlewaretoken')
-        self.assertContains(response, '<button class="button button-secondary" type="button" disabled>Crear una cuenta</button>', html=True)
+        self.assertContains(response, '<a class="button button-secondary" href="/registro/">Crear una cuenta</a>', html=True)
 
     def test_dashboard_requires_login_and_login_succeeds(self):
         User.objects.create_user(
@@ -28,11 +28,11 @@ class AuthenticationFlowTests(TestCase):
         self.assertRedirects(response, '/panel/')
         self.assertContains(self.client.get('/panel/'), 'Has iniciado sesión correctamente.')
 
-    def test_login_rejects_email_and_password_over_twenty_characters(self):
+    def test_login_rejects_email_over_fifty_and_password_over_twenty_characters(self):
         response = self.client.post(
             '/',
             {
-                'username': 'persona@empresa-larga.com',
+                'username': f"persona@{'a' * 45}.com",
                 'password': 'UnaClaveDeMasDe20Caracteres',
             },
         )
@@ -40,7 +40,8 @@ class AuthenticationFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn('username', response.context['form'].errors)
         self.assertIn('password', response.context['form'].errors)
-        self.assertContains(response, 'maxlength="20"', count=2)
+        self.assertContains(response, 'maxlength="50"', count=1)
+        self.assertContains(response, 'maxlength="20"', count=1)
 
     def test_password_reset_page_renders(self):
         response = self.client.get('/recuperar-contrasena/')
