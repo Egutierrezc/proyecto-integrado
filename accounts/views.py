@@ -14,12 +14,7 @@ from .forms import SignUpForm
 
 @login_required
 def dashboard(request):
-    token, _ = Token.objects.get_or_create(user=request.user)
-    return render(
-        request,
-        'accounts/dashboard.html',
-        {'api_token': token.key},
-    )
+    return redirect('home')
 
 
 def register(request):
@@ -31,7 +26,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect('dashboard')
+            return redirect('home')
     else:
         form = SignUpForm()
         

@@ -20,102 +20,55 @@
             </div>
 
             <nav>
-                <a class="active" href="#">⌂ &nbsp; Inicio</a>
-                <a href="#">▣ &nbsp; Obligaciones</a>
-                <a href="#">▤ &nbsp; Declaraciones</a>
+                <a class="active" href="{% url 'home' %}">⌂ &nbsp; Inicio</a>
             </nav>
 
             <div class="sidebar-bottom">
-                <a href="#">⚙ &nbsp; Configuración</a>
-                <a href="#">↪ &nbsp; Cerrar sesión</a>
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">↪ &nbsp; Cerrar sesión</button>
+                </form>
             </div>
         </aside>
 
         <div class="main-area">
             <header class="topbar">
-                <input type="text" placeholder="⌕  Buscar declaraciones...">
                 <div class="profile">
-                    <span>MG</span>
-                    María González
+                    <span>{{ display_name|first|upper }}</span>
+                    {{ display_name }}
                 </div>
             </header>
 
             <main class="content">
                 <div class="welcome">
                     <div>
-                        <h1>Buenos días, María</h1>
-                        <p>Aquí tienes un resumen de tus impuestos.</p>
+                        <h1>Hola, {{ display_name }}</h1>
+                        <p>Este es tu espacio personal en Tribu.</p>
                     </div>
-                    <button class="primary-button">＋ Nueva declaración</button>
                 </div>
-
-                <section class="stats">
-                    <div class="stat-card">
-                        <div class="stat-icon orange">◷</div>
-                        <h2>3</h2>
-                        <p>Pendientes</p>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon green">✓</div>
-                        <h2>12</h2>
-                        <p>Presentadas</p>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon purple">▣</div>
-                        <h2>18 Jun</h2>
-                        <p>Próximo vencimiento</p>
-                    </div>
-                </section>
 
                 <section class="deadlines">
                     <div class="section-heading">
-                        <h3>Próximos vencimientos</h3>
-                        <p>Obligaciones que requieren tu atención</p>
+                        <h3>Tus obligaciones</h3>
+                        <p>Los vencimientos registrados aparecerán aquí.</p>
                     </div>
-
-                    <div class="deadline-row">
-                        <div>
-                            <strong>Declaración de IVA</strong>
-                            <p>Bimestre 3 · 2025</p>
-                        </div>
-                        <div class="deadline-info">
-                            <span class="tag yellow">Próxima</span>
-                            <strong>18 Jun</strong>
-                        </div>
+                    <div class="empty-state">
+                        Aún no tienes obligaciones registradas.
                     </div>
-
-                    <div class="deadline-row">
-                        <div>
-                            <strong>Retención en la fuente</strong>
-                            <p>Mayo · 2025</p>
-                        </div>
-                        <div class="deadline-info">
-                            <span class="tag blue">Pendiente</span>
-                            <strong>24 Jun</strong>
-                        </div>
-                    </div>
-
-                    <div class="deadline-row">
-                        <div>
-                            <strong>Impuesto de renta</strong>
-                            <p>Año gravable · 2024</p>
-                        </div>
-                        <div class="deadline-info">
-                            <span class="tag violet">En revisión</span>
-                            <strong>09 Jul</strong>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="success-message">
-                    <div>
-                        <strong>✓ &nbsp; Todo está bajo control</strong>
-                        <p>No tienes obligaciones vencidas.</p>
-                    </div>
-                    <span>Ver calendario</span>
                 </section>
             </main>
         </div>
     </div>
+    {{ api_token|json_script:"api-token" }}
+    <script>
+        const apiToken = JSON.parse(document.getElementById('api-token').textContent);
+        localStorage.setItem('authToken', apiToken);
+        sessionStorage.setItem('authToken', apiToken);
+
+        document.querySelector('.logout-form').addEventListener('submit', () => {
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+        });
+    </script>
 </body>
 </html>

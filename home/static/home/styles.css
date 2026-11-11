@@ -76,6 +76,23 @@ body {
     padding-top: 20px;
 }
 
+.logout-form button {
+    width: 100%;
+    border: 0;
+    background: none;
+    color: #929daf;
+    text-align: left;
+    font: inherit;
+    padding: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.logout-form button:hover {
+    background: #173025;
+    color: #67c9a9;
+}
+
 .main-area {
     flex: 1;
     min-width: 0;
@@ -200,6 +217,13 @@ body {
     border: 1px solid #414141;
     border-radius: 16px;
     overflow: hidden;
+}
+
+.empty-state {
+    border-top: 1px solid #393939;
+    padding: 24px;
+    color: #91a0ba;
+    font-size: 14px;
 }
 
 .section-heading {
