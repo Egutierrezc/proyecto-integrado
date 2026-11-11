@@ -27,8 +27,22 @@ class AuthenticationFlowTests(TestCase):
             '/',
             {'username': 'PERSONA@empresa.com', 'password': 'UnaClaveLarga!2026'},
         )
-        self.assertRedirects(response, '/panel/')
-        self.assertContains(self.client.get('/panel/'), 'Has iniciado sesión correctamente.')
+        self.assertRedirects(response, '/home/')
+        self.assertContains(self.client.get('/home/'), 'Hola, persona')
+
+    def test_registration_signs_user_in_and_redirects_to_home(self):
+        response = self.client.post(
+            '/registro/',
+            {
+                'username': 'nueva-persona',
+                'email': 'nueva@empresa.com',
+                'password1': 'UnaClaveLarga!2026',
+                'password2': 'UnaClaveLarga!2026',
+            },
+        )
+
+        self.assertRedirects(response, '/home/')
+        self.assertContains(self.client.get('/home/'), 'Hola, nueva-persona')
 
     def test_web_login_stores_api_token_in_browser_storage_and_logout_revokes_it(self):
         user = User.objects.create_user(
@@ -41,7 +55,7 @@ class AuthenticationFlowTests(TestCase):
             '/',
             {'username': 'TOKEN-PERSONA@EMPRESA.COM', 'password': 'UnaClaveLarga!2026'},
         )
-        response = self.client.get('/panel/')
+        response = self.client.get('/home/')
 
         self.assertEqual(response.status_code, 200)
         token = Token.objects.get(user=user)

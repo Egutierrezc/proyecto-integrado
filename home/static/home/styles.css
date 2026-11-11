@@ -76,6 +76,23 @@ body {
     padding-top: 20px;
 }
 
+.logout-form button {
+    width: 100%;
+    border: 0;
+    background: none;
+    color: #929daf;
+    text-align: left;
+    font: inherit;
+    padding: 14px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.logout-form button:hover {
+    background: #173025;
+    color: #67c9a9;
+}
+
 .main-area {
     flex: 1;
     min-width: 0;
@@ -92,14 +109,39 @@ body {
     padding: 0 32px;
 }
 
-.topbar input {
+.search-box {
+    display: flex;
+    align-items: center;
     background: #24272a;
-    border: none;
+    border: 1px solid #393939;
     border-radius: 10px;
-    color: white;
-    padding: 14px 18px;
-    width: 290px;
+    width: min(360px, 60%);
     max-width: 100%;
+}
+
+.search-box:focus-within {
+    border-color: #35b58e;
+}
+
+.search-box input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #f5f5f5;
+    padding: 13px 16px;
+    font: inherit;
+}
+
+.search-box input::placeholder {
+    color: #929daf;
+}
+
+.search-box span {
+    color: #929daf;
+    padding: 10px 14px;
+    font-size: 19px;
 }
 
 .profile {
@@ -107,6 +149,7 @@ body {
     align-items: center;
     gap: 12px;
     font-weight: bold;
+    margin-left: auto;
 }
 
 .profile span {
@@ -202,6 +245,13 @@ body {
     overflow: hidden;
 }
 
+.empty-state {
+    border-top: 1px solid #393939;
+    padding: 24px;
+    color: #91a0ba;
+    font-size: 14px;
+}
+
 .section-heading {
     padding: 24px;
 }
@@ -288,6 +338,10 @@ body {
 
     .topbar {
         padding: 0 16px;
+    }
+
+    .search-box {
+        width: min(360px, 65%);
     }
 
     .profile {
