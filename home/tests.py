@@ -17,10 +17,13 @@ class HomeTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Hola, ana')
+        self.assertContains(response, 'aria-label="Buscar obligaciones"')
         self.assertContains(response, 'ana')
         self.assertNotContains(response, 'María González')
         self.assertNotContains(response, 'Bimestre 3')
         self.assertContains(response, 'Aún no tienes obligaciones registradas.')
+        content = response.content.decode()
+        self.assertLess(content.index('class="search-box"'), content.index('class="profile"'))
 
         self.client.force_login(second_user)
         response = self.client.get('/home/')
