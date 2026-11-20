@@ -31,12 +31,18 @@ class EmailAuthenticationForm(AuthenticationForm):
 
 class SignUpForm(UserCreationForm):
     username = forms.CharField(
+        min_length=3,
         max_length=50,
         label='Nombre de usuario',
+        error_messages={
+            'min_length': 'El nombre de usuario debe tener al menos 3 caracteres.',
+            'max_length': 'El nombre de usuario no puede superar los 50 caracteres.',
+        },
         widget=forms.TextInput(
             attrs={
                 'placeholder': 'Tu nombre de usuario',
                 'autocomplete': 'username',
+                'minlength': '3',
                 'maxlength': '50',
             }
         ),
