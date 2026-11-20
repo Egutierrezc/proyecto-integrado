@@ -30,16 +30,23 @@ class EmailAuthenticationForm(AuthenticationForm):
 
 
 class SignUpForm(UserCreationForm):
+    username = forms.CharField(
+        max_length=50,
+        label='Nombre de usuario',
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Tu nombre de usuario',
+                'autocomplete': 'username',
+                'maxlength': '50',
+            }
+        ),
+    )
     email = forms.EmailField(
         max_length=254,
         label='Correo electrónico',
-        widget=forms.EmailInput(attrs={'placeholder': 'tu@empresa.com', 'autocomplete': 'email'})
+        widget=forms.EmailInput(attrs={'placeholder': 'tu@empresa.com', 'autocomplete': 'email'}),
     )
 
     class Meta:
         model = User
         fields = ('username', 'email')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['username'].widget.attrs.update({'placeholder': 'Tu nombre de usuario', 'autocomplete': 'username'})
