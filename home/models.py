@@ -130,5 +130,21 @@ class Log(models.Model):
     )
     detalle = models.TextField(blank=True)
 
+
+    origen = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    forma_actualizacion = models.CharField(
+        max_length=20,
+        choices=[
+            ("MANUAL", "Manual"),
+            ("CARGA", "Carga de datos"),
+        ],
+        blank=True
+    )
+
+
     def __str__(self):
         return f"{self.accion} - {self.fecha_hora}"
