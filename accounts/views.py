@@ -1,7 +1,9 @@
+import logging
+
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render, redirect
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
@@ -10,6 +12,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import SignUpForm
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -38,6 +43,15 @@ class WebLogoutView(LogoutView):
         if request.user.is_authenticated:
             Token.objects.filter(user=request.user).delete()
         return super().post(request, *args, **kwargs)
+
+
+class WebLoginView(LoginView):
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
+        if form.non_field_errors():
+            logger.warning('Inicio de sesión rechazado: credenciales inválidas.')
+            response.status_code = 401
+        return response
 
 
 class TokenLoginView(APIView):
