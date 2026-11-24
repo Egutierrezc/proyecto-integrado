@@ -83,8 +83,7 @@ class AuthenticationFlowTests(TestCase):
         self.assertContains(response, token.key)
         self.assertContains(response, "localStorage.setItem('authToken', apiToken)")
         self.assertContains(response, "sessionStorage.setItem('authToken', apiToken)")
-        self.assertContains(response, "localStorage.removeItem('authToken')")
-        self.assertContains(response, "sessionStorage.removeItem('authToken')")
+        self.assertContains(response, 'accounts/logout.js')
 
         response = self.client.post('/cerrar-sesion/')
 

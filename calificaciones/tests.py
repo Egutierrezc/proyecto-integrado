@@ -41,6 +41,22 @@ class CalculateFactorsTests(SimpleTestCase):
         self.assertNotIn(34, result.factors)
         self.assertTrue(result.is_valid)
 
+    def test_accepts_factor_and_sum_equal_to_one(self):
+        amounts = self.make_amounts()
+        amounts[8] = Decimal(1)
+
+        result = calculate_factors(amounts)
+
+        self.assertTrue(result.is_valid)
+        self.assertEqual(result.factors[8], Decimal('1.00000000'))
+        self.assertEqual(
+            sum(
+                result.factors[number]
+                for number in range(8, 20)
+            ),
+            Decimal('1.00000000'),
+        )
+
     def test_zero_denominator_leaves_calculated_factors_unavailable(self):
         result = calculate_factors(self.make_amounts())
 
@@ -130,6 +146,7 @@ class MantenedorPrototypeTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'home/styles.css')
+        self.assertContains(response, 'accounts/logout.js')
         self.assertContains(response, 'class="layout"')
         self.assertContains(response, 'class="sidebar"')
         self.assertContains(response, 'aria-current="page"')
@@ -142,6 +159,19 @@ class MantenedorPrototypeTests(TestCase):
         self.assertContains(response, 'Calificación pendiente')
         self.assertContains(response, 'Carga x factor')
         self.assertContains(response, 'Carga x monto')
+        self.assertContains(response, 'id="basic-form" novalidate')
+        self.assertNotContains(response, 'method="dialog"')
+        self.assertContains(response, 'data-tab="amounts"')
+        self.assertContains(response, 'Montos base del cálculo')
+        self.assertContains(response, 'Calcula antes de grabar')
+        self.assertContains(
+            response,
+            'type="button" data-close-dialog aria-label="Cerrar"',
+        )
+        self.assertContains(
+            response,
+            'type="button" data-close-dialog>Cancelar</button>',
+        )
         self.assertContains(response, 'PASO 1 DE 2')
         self.assertContains(response, 'PASO 2 DE 2')
         self.assertContains(response, 'Certificado 70 / 1948')
@@ -296,7 +326,41 @@ class QualificationEntryFlowTests(TestCase):
         data = data if data is not None else self.entry_data
         for number in CALCULATED_FACTOR_NUMBERS:
             data[f'amount_{number}'] = '0'
+        data['calculation_confirmed'] = 'true'
         return data
+
+    def test_amount_entry_requires_all_amounts_and_a_calculation(self):
+        incomplete_data = self.add_zero_amounts(self.entry_data.copy())
+        incomplete_data['amount_8'] = '1'
+        del incomplete_data['amount_33']
+
+        incomplete_response = self.client.post(
+            '/calificaciones/ingresar/',
+            incomplete_data,
+        )
+
+        self.assertEqual(incomplete_response.status_code, 400)
+        self.assertIn(
+            'Ingresa un monto; escribe 0 si no corresponde.',
+            incomplete_response.json()['errors'],
+        )
+        self.assertFalse(Qualification.objects.exists())
+
+        uncalculated_data = self.add_zero_amounts(self.entry_data.copy())
+        uncalculated_data['amount_8'] = '1'
+        uncalculated_data.pop('calculation_confirmed')
+
+        uncalculated_response = self.client.post(
+            '/calificaciones/ingresar/',
+            uncalculated_data,
+        )
+
+        self.assertEqual(uncalculated_response.status_code, 400)
+        self.assertIn(
+            'Completa los montos 8–33 y calcula los factores antes de grabar.',
+            uncalculated_response.json()['errors'],
+        )
+        self.assertFalse(Qualification.objects.exists())
 
     def test_amount_entry_calculates_saves_audits_and_lists_local_record(self):
         data = self.add_zero_amounts()
@@ -391,3 +455,13 @@ class QualificationEntryFlowTests(TestCase):
         )
         self.assertEqual(zero_response.status_code, 422)
         self.assertIn('es 0', zero_response.json()['errors'][0])
+
+        incomplete_response = self.client.post(
+            '/calificaciones/calcular/',
+            {'amount_8': '1'},
+        )
+        self.assertEqual(incomplete_response.status_code, 400)
+        self.assertIn(
+            'Ingresa un monto; escribe 0 si no corresponde.',
+            incomplete_response.json()['errors'],
+        )

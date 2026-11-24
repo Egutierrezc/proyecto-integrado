@@ -164,14 +164,14 @@
     </div>
 
     <dialog class="modal" id="basic-dialog" aria-labelledby="basic-title">
-        <form method="dialog" class="modal-form" id="basic-form">
+        <form class="modal-form" id="basic-form" novalidate>
             <header class="modal-header">
                 <div>
                     <p class="eyebrow">PASO 1 DE 2</p>
                     <h2 id="basic-title">Ingresar calificación</h2>
                     <p>Completa los datos del instrumento y del evento.</p>
                 </div>
-                <button class="icon-button" type="submit" value="close" aria-label="Cerrar">×</button>
+                <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar">×</button>
             </header>
             <div class="basic-fields">
                 <label>Mercado<select name="market" required><option value="ACN">Acciones</option><option value="CFI">CFI</option><option value="FM">Fondos mutuos</option></select></label>
@@ -187,7 +187,7 @@
                 <label class="check-field"><input name="isfut_isift" type="checkbox"><span>Acogido a ISFUT / ISIFT</span></label>
             </div>
             <footer class="modal-actions">
-                <button class="button button-secondary" type="submit" value="close">Cancelar</button>
+                <button class="button button-secondary" type="button" data-close-dialog>Cancelar</button>
                 <button class="button button-primary" type="button" data-next-dialog="factor-dialog">Continuar</button>
             </footer>
         </form>
@@ -207,23 +207,73 @@
             <input type="hidden" name="exercise" id="entry-exercise">
             <input type="hidden" name="update_factor" id="entry-update_factor">
             <input type="hidden" name="isfut_isift" id="entry-isfut_isift">
-            <input type="hidden" name="entry_mode" value="factors">
+            <input type="hidden" name="entry_mode" value="amounts">
+            <input type="hidden" name="calculation_confirmed" value="">
             <header class="modal-header">
                 <div>
                     <p class="eyebrow">PASO 2 DE 2</p>
                     <h2 id="factor-title">Montos y factores tributarios</h2>
-                    <p>El cálculo automático de montos usa la homologación del Certificado 70 / 1948.</p>
+                    <p>Completa los montos del Certificado 70 / 1948 para obtener los factores automáticamente.</p>
                 </div>
                 <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar">×</button>
             </header>
             <div class="tabs" role="tablist" aria-label="Tipo de ingreso">
-                <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="factors">Factores 8–37</button>
-                <button class="tab" type="button" role="tab" aria-selected="false" data-tab="amounts">Certificado 70 / 1948</button>
+                <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="amounts">Montos · Certificado 70 / 1948</button>
+                <button class="tab" type="button" role="tab" aria-selected="false" data-tab="factors">Factores 8–37 · Manual</button>
             </div>
-            <section class="factor-fields" data-panel="factors" role="tabpanel">
+            <section class="factor-fields amount-fields" data-panel="amounts" role="tabpanel">
                 <p class="mapping-note">
-                    El CSV incluye los factores 8–37. El cálculo desde montos aplica a 8–33;
-                    34–37 son manuales y 19B solo se ingresa aquí, fuera del CSV.
+                    Completa los 26 montos 8–33; escribe 0 si no aplica. Los montos 8–19 forman
+                    el denominador y cada monto 8–33 es numerador de su factor. Esta homologación
+                    no se aplica al Certificado 44 / 1922 ni a DJ1949.
+                </p>
+                <div class="amount-group denominator-group">
+                    <header class="amount-group-heading">
+                        <div>
+                            <h3>Montos base del cálculo</h3>
+                            <p>La suma de estas columnas es el denominador.</p>
+                        </div>
+                        <span class="amount-range">8–19</span>
+                    </header>
+                    {% for number in amount_denominator_fields %}
+                    <label class="factor-field">
+                        <span><b>Monto {{ number }}</b><small>Certificado 70 / 1948 · Escribe 0 si no aplica</small></span>
+                        <input data-amount-input name="amount_{{ number }}" type="number" step="any" placeholder="0" aria-label="Monto {{ number }}, parte del denominador">
+                    </label>
+                    {% endfor %}
+                </div>
+                <div class="amount-group">
+                    <header class="amount-group-heading">
+                        <div>
+                            <h3>Montos de los factores 20–33</h3>
+                            <p>Cada monto es el numerador de su factor.</p>
+                        </div>
+                        <span class="amount-range">20–33</span>
+                    </header>
+                    {% for number in amount_other_fields %}
+                    <label class="factor-field">
+                        <span><b>Monto {{ number }}</b><small>Certificado 70 / 1948 · Escribe 0 si no aplica</small></span>
+                        <input data-amount-input name="amount_{{ number }}" type="number" step="any" placeholder="0" aria-label="Monto {{ number }}">
+                    </label>
+                    {% endfor %}
+                </div>
+                <button class="button button-secondary calculate-button" type="button" data-calculate-factors>Calcular factores</button>
+                <details class="calculated-preview" data-calculated-preview hidden>
+                    <summary>Factores 8–33 calculados · Denominador: <output data-denominator-result>—</output></summary>
+                    <div class="factor-preview-grid">
+                        {% for number, label in factor_fields %}
+                        <div class="factor-preview-item">
+                            <span>Factor {{ number }}</span>
+                            <output data-factor-result="{{ number }}">—</output>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            </section>
+            <section class="factor-fields" data-panel="factors" role="tabpanel" hidden>
+                <p class="mapping-note">
+                    Usa esta alternativa cuando ya tengas los factores calculados. Los factores
+                    34–37 son manuales; el factor 19B se ingresa manualmente y queda fuera del CSV.
                 </p>
                 {% for number, label in factor_fields %}
                 <label class="factor-field">
@@ -238,28 +288,16 @@
                 </label>
                 {% endfor %}
             </section>
-            <section class="factor-fields amount-fields" data-panel="amounts" role="tabpanel" hidden>
-                <p class="mapping-note">
-                    Esta homologación no se aplica al Certificado 44 / 1922. La referencia DJ1949 del Excel
-                    queda sin cálculo automático hasta confirmar su correspondencia.
-                </p>
-                {% for number in amount_fields %}
-                <label class="factor-field">
-                    <span><b>Monto {{ number }}</b><small>Certificado 70 / 1948 · Columna {{ number }}</small></span>
-                    <input name="amount_{{ number }}" type="number" step="any" placeholder="0">
-                </label>
-                {% endfor %}
-                <button class="button button-secondary calculate-button" type="button" data-calculate-factors>Calcular factores</button>
-            </section>
             <footer class="modal-actions">
                 <button class="button button-secondary" type="button" data-open-dialog="basic-dialog">Volver</button>
                 <span class="entry-status" id="entry-status" role="status" aria-live="polite"></span>
                 <button class="button button-secondary" type="button" data-close-dialog>Cancelar</button>
-                <button class="button button-primary" type="submit">Grabar</button>
+                <button class="button button-primary" type="submit" data-save-qualification disabled>Calcula antes de grabar</button>
             </footer>
         </form>
     </dialog>
 
     <script src="{% static 'calificaciones/mantenedor.js' %}" defer></script>
+    <script src="{% static 'accounts/logout.js' %}" defer></script>
 </body>
 </html>
