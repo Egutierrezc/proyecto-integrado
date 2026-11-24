@@ -26,6 +26,9 @@ _FACTOR_QUANTUM = Decimal('0.00000001')
 class DecimalInputField(forms.Field):
     widget = forms.NumberInput
     max_input_length = 50
+    default_error_messages = {
+        'required': 'Ingresa un monto; escribe 0 si no corresponde.'
+    }
 
     def to_python(self, value):
         if value in self.empty_values:
@@ -46,7 +49,7 @@ class AmountCalculationForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for number in CALCULATED_FACTOR_NUMBERS:
-            self.fields[f'amount_{number}'] = DecimalInputField(required=False)
+            self.fields[f'amount_{number}'] = DecimalInputField(required=True)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -76,6 +79,7 @@ class QualificationEntryForm(forms.Form):
     update_factor = DecimalInputField(required=False)
     isfut_isift = forms.BooleanField(required=False)
     entry_mode = forms.ChoiceField(choices=ENTRY_MODE_CHOICES)
+    calculation_confirmed = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -100,30 +104,45 @@ class QualificationEntryForm(forms.Form):
         if self.errors:
             return cleaned_data
 
-        amounts = {
-            number: (
-                cleaned_data[f'amount_{number}']
-                if cleaned_data[f'amount_{number}'] is not None
-                else Decimal(0)
-            )
-            for number in CALCULATED_FACTOR_NUMBERS
-        }
-
         if cleaned_data['entry_mode'] == 'amounts':
+            missing_amounts = [
+                number
+                for number in CALCULATED_FACTOR_NUMBERS
+                if cleaned_data[f'amount_{number}'] is None
+            ]
+            for number in missing_amounts:
+                self.add_error(
+                    f'amount_{number}',
+                    'Ingresa un monto; escribe 0 si no corresponde.',
+                )
+            if missing_amounts:
+                return cleaned_data
+            if not cleaned_data['calculation_confirmed']:
+                self.add_error(
+                    None,
+                    'Completa los montos 8–33 y calcula los factores antes de grabar.',
+                )
+                return cleaned_data
+
+            amounts = {
+                number: cleaned_data[f'amount_{number}']
+                for number in CALCULATED_FACTOR_NUMBERS
+            }
             calculation = calculate_factors(amounts)
             if not calculation.is_valid:
                 for error in calculation.errors:
                     self.add_error(None, error)
                 return cleaned_data
-            factors = {
+            factors = calculation.factors
+        else:
+            amounts = {
                 number: (
-                    cleaned_data[f'factor_{number}']
-                    if cleaned_data[f'factor_{number}'] is not None
-                    else calculation.factors[number]
+                    cleaned_data[f'amount_{number}']
+                    if cleaned_data[f'amount_{number}'] is not None
+                    else Decimal(0)
                 )
                 for number in CALCULATED_FACTOR_NUMBERS
             }
-        else:
             factors = {
                 number: (
                     cleaned_data[f'factor_{number}']

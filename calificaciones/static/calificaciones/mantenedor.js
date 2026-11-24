@@ -3,6 +3,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const basicForm = document.getElementById('basic-form');
     const qualificationForm = document.getElementById('qualification-form');
     const entryStatus = document.getElementById('entry-status');
+    const entryModeInput = qualificationForm.querySelector('[name="entry_mode"]');
+    const calculationConfirmedInput = qualificationForm.querySelector(
+        '[name="calculation_confirmed"]',
+    );
+    const saveButton = qualificationForm.querySelector(
+        '[data-save-qualification]',
+    );
+    const amountInputs = Array.from(
+        qualificationForm.querySelectorAll('[data-amount-input]'),
+    );
+    const calculatedPreview = qualificationForm.querySelector(
+        '[data-calculated-preview]',
+    );
+    const denominatorResult = qualificationForm.querySelector(
+        '[data-denominator-result]',
+    );
+    const factorResults = qualificationForm.querySelectorAll(
+        '[data-factor-result]',
+    );
+    let calculationIsCurrent = false;
+
+    const updateSaveButton = () => {
+        const needsCalculation =
+            entryModeInput.value === 'amounts' && !calculationIsCurrent;
+        amountInputs.forEach((input) => {
+            input.required = entryModeInput.value === 'amounts';
+        });
+        saveButton.disabled = needsCalculation;
+        saveButton.textContent = needsCalculation
+            ? 'Calcula antes de grabar'
+            : 'Grabar';
+    };
+
+    const clearCalculatedPreview = () => {
+        calculatedPreview.hidden = true;
+        calculatedPreview.open = false;
+        denominatorResult.textContent = '—';
+        factorResults.forEach((result) => {
+            result.textContent = '—';
+        });
+    };
+
+    const invalidateCalculation = ({ clearFactors = false } = {}) => {
+        calculationIsCurrent = false;
+        calculationConfirmedInput.value = '';
+        clearCalculatedPreview();
+        if (clearFactors) {
+            qualificationForm
+                .querySelectorAll('[name^="factor_"]')
+                .forEach((input) => {
+                    if (/^factor_(?:[89]|[12]\d|3[0-3])$/.test(input.name)) {
+                        input.value = '';
+                    }
+                });
+        }
+        updateSaveButton();
+    };
+
+    const resetEntry = () => {
+        basicForm.reset();
+        qualificationForm.reset();
+        calculationIsCurrent = false;
+        qualificationForm.querySelectorAll('[aria-invalid]').forEach((input) => {
+            input.removeAttribute('aria-invalid');
+        });
+        qualificationForm.querySelector('[data-tab="amounts"]').click();
+        entryStatus.textContent = '';
+    };
+
+    updateSaveButton();
+    basicForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+    });
 
     if (new URLSearchParams(window.location.search).get('nuevo') === '1') {
         document.getElementById('basic-dialog')?.showModal();
@@ -35,7 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     basicForm.querySelector('[name="isfut_isift"]').checked
                         ? 'on'
                         : '';
-                document.querySelector('[name="entry_mode"]').value = 'factors';
+                invalidateCalculation({ clearFactors: true });
+                qualificationForm.querySelector('[data-tab="amounts"]').click();
             }
             currentDialog?.close();
             nextDialog?.showModal();
@@ -44,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.querySelectorAll('[data-close-dialog]').forEach((button) => {
         button.addEventListener('click', () => {
+            resetEntry();
             button.closest('dialog')?.close();
         });
     });
@@ -62,14 +137,54 @@ document.addEventListener('DOMContentLoaded', () => {
             dialog.querySelectorAll('[data-panel]').forEach((panel) => {
                 panel.hidden = panel.dataset.panel !== selectedPanel;
             });
-            qualificationForm.querySelector('[name="entry_mode"]').value =
-                selectedPanel;
-            entryStatus.textContent = '';
+            entryModeInput.value = selectedPanel;
+            updateSaveButton();
+            entryStatus.textContent =
+                selectedPanel === 'amounts' && !calculationIsCurrent
+                    ? 'Completa todos los montos 8–33 y calcula los factores.'
+                    : '';
         });
     });
 
+    amountInputs.forEach((input) => {
+        input.addEventListener('input', () => {
+            input.removeAttribute('aria-invalid');
+            invalidateCalculation({ clearFactors: true });
+            if (entryModeInput.value === 'amounts') {
+                entryStatus.textContent =
+                    'Los montos cambiaron. Vuelve a calcular antes de grabar.';
+            }
+        });
+    });
+
+    qualificationForm
+        .querySelectorAll('[name^="factor_"]')
+        .forEach((input) => {
+            input.addEventListener('input', () => {
+                invalidateCalculation();
+            });
+        });
+
     document.querySelectorAll('[data-calculate-factors]').forEach((button) => {
         button.addEventListener('click', async () => {
+            const missingAmounts = amountInputs.filter(
+                (input) => input.value.trim() === '',
+            );
+            amountInputs.forEach((input) => {
+                input.setAttribute(
+                    'aria-invalid',
+                    String(missingAmounts.includes(input)),
+                );
+            });
+            if (missingAmounts.length) {
+                invalidateCalculation();
+                entryStatus.textContent =
+                    'Completa todos los montos 8–33; escribe 0 si alguno no aplica.';
+                missingAmounts[0].focus();
+                return;
+            }
+
+            invalidateCalculation();
             entryStatus.textContent = 'Calculando factores…';
             button.disabled = true;
             try {
@@ -92,8 +207,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         `[name="factor_${number}"]`,
                     ).value = value;
                 }
+                factorResults.forEach((resultField) => {
+                    resultField.textContent =
+                        result.factors[resultField.dataset.factorResult];
+                });
+                denominatorResult.textContent = result.denominator;
+                calculatedPreview.hidden = false;
+                calculatedPreview.open = true;
+                calculationIsCurrent = true;
+                calculationConfirmedInput.value = 'true';
+                updateSaveButton();
                 entryStatus.textContent =
-                    'Factores calculados. Puedes revisarlos o modificarlos antes de grabar.';
+                    'Factores calculados. Revisa el resultado y graba cuando esté listo.';
             } catch (error) {
                 entryStatus.textContent =
                     'No se pudo calcular. Revisa tu conexión e inténtalo nuevamente.';
@@ -106,11 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     qualificationForm?.addEventListener('submit', async (event) => {
         event.preventDefault();
+        if (
+            entryModeInput.value === 'amounts' &&
+            !calculationIsCurrent
+        ) {
+            entryStatus.textContent =
+                'Completa todos los montos 8–33 y calcula los factores antes de grabar.';
+            return;
+        }
         entryStatus.textContent = 'Guardando calificación…';
-        const submitButton = qualificationForm.querySelector(
-            'button[type="submit"]',
-        );
-        submitButton.disabled = true;
+        saveButton.disabled = true;
         try {
             const response = await fetch(qualificationForm.action, {
                 method: 'POST',
@@ -134,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 'No se pudo guardar. Revisa tu conexión e inténtalo nuevamente.';
             console.error('Error al guardar la calificación:', error);
         } finally {
-            submitButton.disabled = false;
+            updateSaveButton();
         }
     });
 
@@ -145,8 +275,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dialogs.forEach((dialog) => {
+        dialog.addEventListener('cancel', () => {
+            resetEntry();
+        });
+        dialog.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                resetEntry();
+                dialog.close();
+            }
+        });
         dialog.addEventListener('click', (event) => {
             if (event.target === dialog) {
+                resetEntry();
                 dialog.close();
             }
         });

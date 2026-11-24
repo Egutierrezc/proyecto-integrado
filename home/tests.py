@@ -20,6 +20,7 @@ class HomeTests(TestCase):
         response = self.client.get('/home/')
 
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'accounts/logout.js')
         self.assertContains(response, 'Hola, ana')
         self.assertContains(response, 'Calificaciones visibles')
         self.assertContains(response, 'Calificaciones recientes')

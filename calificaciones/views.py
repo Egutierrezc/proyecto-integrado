@@ -103,6 +103,8 @@ def mantenedor(request):
             'manual_factor_fields': MANUAL_FACTOR_LABELS.items(),
             'grid_factor_fields': grid_factor_fields,
             'amount_fields': range(8, 34),
+            'amount_denominator_fields': range(8, 20),
+            'amount_other_fields': range(20, 34),
             'commercial_years': COMMERCIAL_YEARS,
             'selected_market': selected_market,
             'selected_origin': selected_origin,

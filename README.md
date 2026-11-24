@@ -32,7 +32,10 @@ factores 8–37 (30 columnas); 34–37 son valores manuales sin fórmula homolog
 El factor 19B se ingresa manualmente en pantalla y queda fuera del CSV. El
 mantenedor permite ingresar calificaciones manualmente, calcular factores desde
 montos homologados en el servidor y guardar los registros asociados al corredor.
-La edición, eliminación y cargas masivas siguen pendientes.
+El ingreso por montos solicita completar las columnas 8–33 (usar 0 cuando no
+aplique), calcular los factores y luego guardar. El ingreso directo por factores
+se conserva como alternativa manual. La edición, eliminación y cargas masivas
+siguen pendientes.
 
 ### Decisión de formulario para el cálculo de montos
 
@@ -44,12 +47,17 @@ en `3.TIpos de datos` no queda vinculada de forma inequívoca a estas columnas;
 por tanto, no se calcula automáticamente hasta confirmar su correspondencia.
 Los montos sin homologación aplicable deben mantenerse en ingreso manual.
 
-La identidad de una calificación se define por mercado, ejercicio, instrumento,
-fecha de pago y secuencia del evento. El sistema admite una calificación de
-origen sistema y una calificación local por corredor para la misma identidad;
-el corredor ve su versión local en lugar de la del sistema, sin modificarla.
-También están definidos los modelos de auditoría para conservar la identidad
-del evento, el actor, el origen, el método de ingreso y los cambios.
+El Excel exige una llave para identificar y actualizar calificaciones existentes,
+pero no especifica qué campos la componen. La plantilla de carga incluye también
+número de dividendo y tipo de sociedad, sin indicar si forman parte de esa llave.
+Por ahora, el código usa como llave técnica provisional mercado, ejercicio,
+instrumento, fecha de pago y secuencia del evento; esta propuesta no está
+confirmada por la fuente y debe validarse antes de implementar actualizaciones y
+cargas masivas. La regla de negocio sí establece que los datos del corredor son
+locales y prevalecen sobre los de Bolsa. Actualmente, una calificación local
+reemplaza visualmente a la de sistema cuando coincide con la llave provisional,
+sin modificar el registro de sistema. Los modelos de auditoría conservan la
+identidad registrada, el actor, el origen, el método de ingreso y los cambios.
 
 ## API de token
 
