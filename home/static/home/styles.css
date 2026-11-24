@@ -187,12 +187,42 @@ body {
 }
 
 .primary-button {
+    display: inline-flex;
+    align-items: center;
     background: #008563;
     border: none;
     border-radius: 10px;
     color: white;
     padding: 15px 22px;
     cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.primary-button:hover {
+    background: #006f52;
+}
+
+.recent-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.dashboard-link {
+    color: #67c9a9;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.dashboard-link:hover {
+    text-decoration: underline;
+}
+
+.empty-state p {
+    margin-bottom: 12px;
 }
 
 .stats {
@@ -332,6 +362,11 @@ body {
     }
 
     .welcome {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .recent-heading {
         align-items: flex-start;
         flex-direction: column;
     }

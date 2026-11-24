@@ -1,0 +1,115 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio | Tribu</title>
+    <link rel="stylesheet" href="{% static 'home/styles.css' %}">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">✓</div>
+                <div>
+                    <h2>Tribu</h2>
+                    <small>GESTIÓN TRIBUTARIA</small>
+                </div>
+            </div>
+
+            <nav>
+                <a class="active" href="{% url 'home' %}">⌂ &nbsp; Inicio</a>
+                <a href="{% url 'calificaciones' %}">▦ &nbsp; Calificaciones tributarias</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">↪ &nbsp; Cerrar sesión</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div class="profile">
+                    <span>{{ display_name|first|upper }}</span>
+                    {{ display_name }}
+                </div>
+            </header>
+
+            <main class="content">
+                <div class="welcome">
+                    <div>
+                        <p class="eyebrow">RESUMEN DE ACTIVIDAD</p>
+                        <h1>Hola, {{ display_name }}</h1>
+                        <p>Consulta tus calificaciones tributarias y continúa gestionándolas.</p>
+                    </div>
+                    <a class="primary-button" href="{% url 'calificaciones' %}?nuevo=1">Ingresar calificación</a>
+                </div>
+
+                <section class="stats" aria-label="Resumen de calificaciones">
+                    <article class="stat-card">
+                        <div class="stat-icon green" aria-hidden="true">▦</div>
+                        <p>Calificaciones visibles</p>
+                        <h2>{{ qualification_count }}</h2>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon purple" aria-hidden="true">●</div>
+                        <p>Ingresadas por ti</p>
+                        <h2>{{ broker_qualification_count }}</h2>
+                    </article>
+                    <article class="stat-card">
+                        <div class="stat-icon orange" aria-hidden="true">✓</div>
+                        <p>Disponibles del sistema</p>
+                        <h2>{{ system_qualification_count }}</h2>
+                    </article>
+                </section>
+
+                <section class="deadlines" aria-labelledby="recent-qualifications-title">
+                    <div class="section-heading recent-heading">
+                        <div>
+                            <h3 id="recent-qualifications-title">Calificaciones recientes</h3>
+                            <p>Las últimas calificaciones disponibles para tu cuenta.</p>
+                        </div>
+                        <a class="dashboard-link" href="{% url 'calificaciones' %}">Ver todas</a>
+                    </div>
+                    {% for qualification in recent_qualifications %}
+                    <article class="deadline-row">
+                        <div>
+                            <strong>{{ qualification.instrument }} · Ejercicio {{ qualification.exercise }}</strong>
+                            <p>{{ qualification.payment_date|date:"d/m/Y" }}{% if qualification.description %} · {{ qualification.description }}{% endif %}</p>
+                        </div>
+                        <div class="deadline-info">
+                            {% if qualification.origin == 'broker' %}
+                            <span class="tag blue">{{ qualification.get_origin_display }}</span>
+                            {% else %}
+                            <span class="tag green">{{ qualification.get_origin_display }}</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="empty-state">
+                        <p>Aún no hay calificaciones para mostrar.</p>
+                        <a class="dashboard-link" href="{% url 'calificaciones' %}?nuevo=1">Ingresa la primera calificación</a>
+                    </div>
+                    {% endfor %}
+                </section>
+            </main>
+        </div>
+    </div>
+    {{ api_token|json_script:"api-token" }}
+    <script>
+        const apiToken = JSON.parse(document.getElementById('api-token').textContent);
+        localStorage.setItem('authToken', apiToken);
+        sessionStorage.setItem('authToken', apiToken);
+
+        document.querySelector('.logout-form')?.addEventListener('submit', () => {
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
+        });
+    </script>
+</body>
+</html>

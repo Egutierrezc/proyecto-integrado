@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Calificaciones tributarias | Tribu</title>
+    <link rel="stylesheet" href="{% static 'home/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'calificaciones/mantenedor.css' %}">
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">✓</div>
+                <div>
+                    <h2>Tribu</h2>
+                    <small>GESTIÓN TRIBUTARIA</small>
+                </div>
+            </div>
+
+            <nav aria-label="Navegación principal">
+                <a href="{% url 'home' %}">⌂ &nbsp; Inicio</a>
+                <a class="active" href="{% url 'calificaciones' %}" aria-current="page">▦ &nbsp; Calificaciones tributarias</a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit">↪ &nbsp; Cerrar sesión</button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div class="profile">
+                    <span>{{ display_name|first|upper }}</span>
+                    {{ display_name }}
+                </div>
+            </header>
+
+            <main class="workspace">
+                <header class="page-header">
+                    <div>
+                        <p class="eyebrow">MANTENEDOR</p>
+                        <h1>Calificaciones tributarias</h1>
+                        <p class="subtitle">Dividendos, remesas y distribuciones</p>
+                    </div>
+                    <span class="prototype-tag">Vista previa</span>
+                </header>
+
+                <section class="panel filters-panel" aria-labelledby="filters-title">
+                    <div class="section-title">
+                        <div>
+                            <h2 id="filters-title">Buscar calificaciones</h2>
+                            <p>Selecciona los criterios y busca en el período comercial.</p>
+                        </div>
+                    </div>
+                    <form class="filters" id="search-form" method="get">
+                        <label>
+                            Mercado
+                            <select name="market">
+                                <option value="">Todos los mercados</option>
+                                <option value="ACN" {% if selected_market == 'ACN' %}selected{% endif %}>Acciones</option>
+                                <option value="CFI" {% if selected_market == 'CFI' %}selected{% endif %}>CFI</option>
+                                <option value="FM" {% if selected_market == 'FM' %}selected{% endif %}>Fondos mutuos</option>
+                            </select>
+                        </label>
+                        <label>
+                            Origen
+                            <select name="origin">
+                                <option value="">Todos los orígenes</option>
+                                <option value="system" {% if selected_origin == 'system' %}selected{% endif %}>Sistema</option>
+                                <option value="broker" {% if selected_origin == 'broker' %}selected{% endif %}>Corredor</option>
+                            </select>
+                        </label>
+                        <label>
+                            Período comercial
+                            <select name="year">
+                                <option value="">Selecciona un año</option>
+                                {% for year in commercial_years %}
+                                <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label class="pending-filter">
+                            <input type="checkbox" name="pending">
+                            <span>Calificación pendiente</span>
+                        </label>
+                        <div class="filter-actions">
+                            <button class="button button-primary" type="submit">Buscar</button>
+                            <button class="button button-secondary" type="reset">Limpiar</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="panel grid-panel" aria-labelledby="grid-title">
+                    <div class="section-title grid-heading">
+                        <div>
+                            <h2 id="grid-title">Registros</h2>
+                            <p>La grilla seguirá el orden y las columnas del mantenedor.</p>
+                        </div>
+                        <span class="result-count">{{ result_count }} resultados</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ejercicio</th>
+                                    <th>Instrumento</th>
+                                    <th>Fecha pago</th>
+                                    <th>Descripción</th>
+                                    <th>Secuencia evento</th>
+                                    <th>Factor actualización</th>
+                                    {% for number, label in grid_factor_fields %}
+                                    <th title="{{ label }}" aria-label="Factor {{ number }}: {{ label }}">Factor {{ number }}</th>
+                                    {% endfor %}
+                                    <th>Acogido ISFUT / ISIFT</th>
+                                    <th>Origen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in qualification_rows %}
+                                <tr>
+                                    <td>{{ row.qualification.exercise }}</td>
+                                    <td>{{ row.qualification.instrument }}</td>
+                                    <td>{{ row.qualification.payment_date|date:"d-m-Y" }}</td>
+                                    <td>{{ row.qualification.description|default:"—" }}</td>
+                                    <td>{{ row.qualification.event_sequence }}</td>
+                                    <td>{{ row.update_factor|default:"—" }}</td>
+                                    {% for factor in row.factor_values %}
+                                    <td>{{ factor|default:"—" }}</td>
+                                    {% endfor %}
+                                    <td>{{ row.isfut_isift }}</td>
+                                    <td>{{ row.qualification.get_origin_display }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="38" class="empty-row">
+                                        <span class="empty-icon" aria-hidden="true">⌕</span>
+                                        <strong>Sin calificaciones para mostrar</strong>
+                                        <span>No hay calificaciones que coincidan con los filtros seleccionados.</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <footer class="grid-footer">
+                        <div class="record-actions">
+                            <button class="button button-primary" type="button" data-open-dialog="basic-dialog">Ingresar</button>
+                            <button class="button button-secondary" type="button" disabled>Modificar</button>
+                            <button class="button button-secondary" type="button" disabled>Eliminar</button>
+                            <button class="button button-secondary" type="button" disabled>Copiar</button>
+                            <button class="button button-secondary" type="button" disabled>Carga x factor</button>
+                            <button class="button button-secondary" type="button" disabled>Carga x monto</button>
+                        </div>
+                        <span class="prototype-note">Edición, eliminación y cargas masivas pendientes</span>
+                    </footer>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <dialog class="modal" id="basic-dialog" aria-labelledby="basic-title">
+        <form method="dialog" class="modal-form" id="basic-form">
+            <header class="modal-header">
+                <div>
+                    <p class="eyebrow">PASO 1 DE 2</p>
+                    <h2 id="basic-title">Ingresar calificación</h2>
+                    <p>Completa los datos del instrumento y del evento.</p>
+                </div>
+                <button class="icon-button" type="submit" value="close" aria-label="Cerrar">×</button>
+            </header>
+            <div class="basic-fields">
+                <label>Mercado<select name="market" required><option value="ACN">Acciones</option><option value="CFI">CFI</option><option value="FM">Fondos mutuos</option></select></label>
+                <label>Instrumento<input name="instrument" type="text" maxlength="50" placeholder="Ej.: COPEC" required></label>
+                <label>Descripción<input name="description" type="text" maxlength="200" placeholder="Descripción del dividendo"></label>
+                <label>Fecha pago<input name="payment_date" type="date" required></label>
+                <label>Secuencia evento<input name="event_sequence" type="number" min="10001" placeholder="Mayor a 10.000" required></label>
+                <label>Evento de capital<input name="event_capital" type="number" min="0" value="0" step="1"></label>
+                <label>Dividendo<input name="dividend_number" type="number" min="0" value="0" step="1"></label>
+                <label>Valor histórico<input name="historical_value" type="number" step="any"></label>
+                <label>Año comercial<select name="exercise" required>{% for year in commercial_years %}<option value="{{ year }}" {% if year == 2025 %}selected{% endif %}>{{ year }}</option>{% endfor %}</select></label>
+                <label>Factor de actualización<input name="update_factor" type="number" value="0" step="any"></label>
+                <label class="check-field"><input name="isfut_isift" type="checkbox"><span>Acogido a ISFUT / ISIFT</span></label>
+            </div>
+            <footer class="modal-actions">
+                <button class="button button-secondary" type="submit" value="close">Cancelar</button>
+                <button class="button button-primary" type="button" data-next-dialog="factor-dialog">Continuar</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <dialog class="modal factor-modal" id="factor-dialog" aria-labelledby="factor-title">
+        <form method="post" action="{% url 'ingresar_calificacion' %}" class="modal-form" id="qualification-form" data-calculate-url="{% url 'calcular_factores' %}">
+            {% csrf_token %}
+            <input type="hidden" name="market" id="entry-market">
+            <input type="hidden" name="instrument" id="entry-instrument">
+            <input type="hidden" name="description" id="entry-description">
+            <input type="hidden" name="payment_date" id="entry-payment_date">
+            <input type="hidden" name="event_sequence" id="entry-event_sequence">
+            <input type="hidden" name="event_capital" id="entry-event_capital">
+            <input type="hidden" name="dividend_number" id="entry-dividend_number">
+            <input type="hidden" name="historical_value" id="entry-historical_value">
+            <input type="hidden" name="exercise" id="entry-exercise">
+            <input type="hidden" name="update_factor" id="entry-update_factor">
+            <input type="hidden" name="isfut_isift" id="entry-isfut_isift">
+            <input type="hidden" name="entry_mode" value="factors">
+            <header class="modal-header">
+                <div>
+                    <p class="eyebrow">PASO 2 DE 2</p>
+                    <h2 id="factor-title">Montos y factores tributarios</h2>
+                    <p>El cálculo automático de montos usa la homologación del Certificado 70 / 1948.</p>
+                </div>
+                <button class="icon-button" type="button" data-close-dialog aria-label="Cerrar">×</button>
+            </header>
+            <div class="tabs" role="tablist" aria-label="Tipo de ingreso">
+                <button class="tab active" type="button" role="tab" aria-selected="true" data-tab="factors">Factores 8–37</button>
+                <button class="tab" type="button" role="tab" aria-selected="false" data-tab="amounts">Certificado 70 / 1948</button>
+            </div>
+            <section class="factor-fields" data-panel="factors" role="tabpanel">
+                <p class="mapping-note">
+                    El CSV incluye los factores 8–37. El cálculo desde montos aplica a 8–33;
+                    34–37 son manuales y 19B solo se ingresa aquí, fuera del CSV.
+                </p>
+                {% for number, label in factor_fields %}
+                <label class="factor-field">
+                    <span><b>Factor {{ number }}</b><small>{{ label }}</small></span>
+                    <input name="factor_{{ number }}" type="number" step="0.00000001" max="1" placeholder="0.00000000" aria-label="Factor {{ number }}: {{ label }}">
+                </label>
+                {% endfor %}
+                {% for number, label in manual_factor_fields %}
+                <label class="factor-field">
+                    <span><b>Factor {{ number }}</b><small>{{ label }} · Ingreso manual</small></span>
+                    <input name="factor_{{ number }}" type="number" step="0.00000001" max="1" placeholder="0.00000000" aria-label="Factor {{ number }}: {{ label }}">
+                </label>
+                {% endfor %}
+            </section>
+            <section class="factor-fields amount-fields" data-panel="amounts" role="tabpanel" hidden>
+                <p class="mapping-note">
+                    Esta homologación no se aplica al Certificado 44 / 1922. La referencia DJ1949 del Excel
+                    queda sin cálculo automático hasta confirmar su correspondencia.
+                </p>
+                {% for number in amount_fields %}
+                <label class="factor-field">
+                    <span><b>Monto {{ number }}</b><small>Certificado 70 / 1948 · Columna {{ number }}</small></span>
+                    <input name="amount_{{ number }}" type="number" step="any" placeholder="0">
+                </label>
+                {% endfor %}
+                <button class="button button-secondary calculate-button" type="button" data-calculate-factors>Calcular factores</button>
+            </section>
+            <footer class="modal-actions">
+                <button class="button button-secondary" type="button" data-open-dialog="basic-dialog">Volver</button>
+                <span class="entry-status" id="entry-status" role="status" aria-live="polite"></span>
+                <button class="button button-secondary" type="button" data-close-dialog>Cancelar</button>
+                <button class="button button-primary" type="submit">Grabar</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <script src="{% static 'calificaciones/mantenedor.js' %}" defer></script>
+</body>
+</html>

@@ -30,6 +30,27 @@ class AuthenticationFlowTests(TestCase):
         self.assertRedirects(response, '/home/')
         self.assertContains(self.client.get('/home/'), 'Hola, persona')
 
+    def test_web_login_returns_unauthorized_and_logs_invalid_credentials(self):
+        User.objects.create_user(
+            username='persona',
+            email='persona@empresa.com',
+            password='UnaClaveLarga!2026',
+        )
+
+        with self.assertLogs('accounts.views', level='WARNING') as logs:
+            response = self.client.post(
+                '/',
+                {'username': 'persona@empresa.com', 'password': 'incorrecta'},
+            )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertTrue(response.context['form'].non_field_errors())
+        self.assertContains(response, 'contraseña', status_code=401)
+        self.assertEqual(
+            logs.output,
+            ['WARNING:accounts.views:Inicio de sesión rechazado: credenciales inválidas.'],
+        )
+
     def test_registration_signs_user_in_and_redirects_to_home(self):
         response = self.client.post(
             '/registro/',
